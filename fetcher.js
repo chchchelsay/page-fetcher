@@ -1,27 +1,33 @@
-const fs = require("fs");
-const request = require("request");
+//require file system, request, check if path is valid, might add is-valid-url
+const fs = require('fs');
+const request = require('request');
+const isValid = require('is-valid-path');
 
-let inputArgs = [process.argv.slice[2]]; //holds the two command line arguments
-let url = inputArgs[0]; //first argument - valid URL
-let filePath = inputArgs[1]; //second argument - destination for data to be published
+//fetcher(); accepts two command line arguments, a url and a file path.
 
-const fetcher = function(url, filePath) {
-//requesting web page
-request(url, (error, body) => {
+const inputArgs = process.argv.slice(2);
+const url = inputArgs[0];
+const filePath = inputArgs[1];
 
-  let fileSize = body.length;
-
-//log error in fetching page data
-  if (error) {
-    console.log(`${error}`);  
+//checks if filePath is valid
+const fetcher = function() {
+  if (!isValid(filePath)) {
+    console.log('INVALID FILE PATH');
+    process.exit();
   }
-//write file if it works!
-  fs.writeFile(filePath, body, err => {
-    if (err) {
-      console.log(err);
-  }
-      console.log(`Downloaded and saved ${body.length} bytes to ${filePath}.`);
+  //uses request to find and return page data; logs error if not found
+  request(url, (error, response, body) => {
+    if (error) {
+      console.log(error);
+    }
+    //writes into new file - error if found, otherwise .length property and filePath are printed if this works
+    fs.writeFile(filePath, body, error => {
+      if (error) {
+        console.log(error);
+      }
     });
-})
+
+    console.log(`Downloaded and saved ${body.length} bytes to ${filePath}.`);
+  });
 };
 fetcher();
